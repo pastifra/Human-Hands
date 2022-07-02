@@ -1,35 +1,34 @@
-import keras.backend as K
 def custom_loss(y_true, y_pred):
-  yes_obj=y_true[:,:,:,0:1]
-  ''' 
-  lxy=(((y_pred[:,:,:,1:2]-y_true[:,:,:,1:2])**2 + (y_pred[:,:,:,2:3]-y_true[:,:,:,2:3])**2)*yes_obj)
-  lwh=(((y_pred[:,:,:,3:4]-y_true[:,:,:,3:4])**2 + (y_pred[:,:,:,4:5]-y_true[:,:,:,4:5])**2)*yes_obj)
-  lp=(((y_true[:,:,:,0:1]-y_pred[:,:,:,0:1])**2)*yes_obj)
-  '''
-  yes_obj = y_true[...,0:1]
-  p_pred = y_pred[...,0:1]
+  
+  mse = tf.keras.losses.MeanSquaredError(reduction = "sum")
+  predictions = tf.reshape(y_pred,(-1,7,7,5))
+  exists_box = tf.expand_dims(y_true[...,0], 3)
 
-  xybox_pred = yes_obj*y_pred[...,:2]
-  xybox_true = yes_obj*y_true[...,:2]
-  
-  epsilon = tf.fill(y_pred[..., 2:4].shape, 1e-6)
-  whbox_pred = tf.math.sign(yes_obj*y_pred[..., 2:4]) * tf.math.sqrt(tf.math.abs(yes_obj*y_pred[..., 2:4] + epsilon))
-  whbox_true = yes_obj*y_true[...,2:4]
+  #BOX LOSS
+  pred_box = exists_box*predictions[...,1:5]
+  target_box = exists_box*y_true[...,1:5]
 
-  x_y_coordinate_loss = tf.keras.losses.MeanSquaredError(
-          tf.reshape(xybox_pred, (-1, xybox_pred.shape[-1])),
-          tf.reshape(xybox_true, (-1, xybox_true.shape[-1]))
-      )
-  w_h_coordinate_loss = tf.keras.losses.MeanSquaredError(
-          
-          tf.reshape(whbox_pred, (-1, whbox_pred.shape[-1])),
-          tf.reshape(whbox_true, (-1, whbox_true.shape[-1]))
-      )
-  prob_loss = tf.keras.losses.MeanSquaredError(
-          tf.reshape(p_pred, (-1, p_pred.shape[-1])),
-          tf.reshape(yes_obj, (-1, yes_obj.shape[-1]))
-      )
+  epsilon = tf.fill(pred_box[..., 2:4].shape, 1e-6)
+  wh_pred = tf.math.sign(pred_box[...,3:5]) * tf.math.sqrt(tf.math.abs(pred_box[...,3:5] + epsilon))
+  wh_targ = tf.math.sqrt(target_box[...,3:5] + epsilon)
+
+  xy_pred = pred_box[...,1:3]
+  xy_true = target_box[...,1:3]
+
+  final_pred_box = tf.concat([xy_pred,wh_pred], axis = 3)
+  final_true_box = tf.concat([xy_true,wh_targ], axis = 3)
+  box_loss = mse(tf.reshape(final_pred_box, (-1, final_pred_box.shape[-1])),tf.reshape(final_true_box, (-1, final_true_box.shape[-1])))
   
-  total_loss = x_y_coordinate_loss + w_h_coordinate_loss + prob_loss
-  
+
+  #OBJECT LOSS
+  pred_obj = predictions[...,0:1]
+  true_obj = y_true[...,0:1]
+
+  object_loss = mse(tf.reshape(exists_box*pred_obj, (-1, )), tf.reshape(exists_box*true_obj, (-1, )) )
+
+  #NO OBJECT LOSS
+  non_exists_box = 1 - exists_box
+  no_object_loss = mse(tf.reshape(non_exists_box*pred_obj, (-1, )), tf.reshape(non_exists_box*true_obj, (-1, )))
+
+  total_loss = 5*box_loss + object_loss + 0.5*no_object_loss
   return total_loss
