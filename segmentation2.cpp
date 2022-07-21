@@ -42,7 +42,20 @@ int main( int argc, char** argv ){
         }
     }
      
-
+    //TRY TO IMPROVE ACCURACY WITH DIVISION OF CHANNELS
+    blur(img, img, Size(3,3));//increase a little bit accuracy
+    
+    //divide channels
+    Mat hsvImg, threshImg;
+    cvtColor(img, hsvImg, cv::COLOR_BGR2HSV);
+  
+    inRange(hsvImg, Scalar(0, 58, 50), Scalar(30, 255, 255), threshImg);//color skin
+    imshow("color",threshImg);
+    waitKey(0);
+    //grabCut requires image in rgb
+    cv::cvtColor(threshImg, threshImg, cv::COLOR_RGBA2RGB);
+    //END NEW CODE
+    
     for(int i = 0; i < numbers.size(); i = i + 4){
         Rect r = Rect(numbers.at(i),numbers.at(i+1), numbers.at(i+2), numbers.at(i+3));
         
