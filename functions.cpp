@@ -89,9 +89,37 @@ void improveMask_avg(Mat& img,Rect& r,vector<double>& avg_intensity,Mat& mask1){
             intensity_diff.push_back(abs(img.at<Vec3b>(n,m)[0]-avg_intensity.at(0)));
             intensity_diff.push_back(abs(img.at<Vec3b>(n,m)[1]-avg_intensity.at(1)));
             intensity_diff.push_back(abs(img.at<Vec3b>(n,m)[2]-avg_intensity.at(2)));
-            if((dist_x > ray_x || dist_y > ray_y) && intensity_diff[0] > 40 && intensity_diff[1] > 40 && intensity_diff[2] > 40){
+            double glob_avg = avg_intensity.at(0)+avg_intensity.at(1)+avg_intensity.at(2);
+            double glob_intensity = img.at<Vec3b>(n,m)[0]+img.at<Vec3b>(n,m)[1]+img.at<Vec3b>(n,m)[2];
+            intensity_diff.push_back(abs(glob_avg-glob_intensity));
+            if((dist_x > ray_x || dist_y > ray_y) && intensity_diff[0] > 5 && intensity_diff[1] > 5 && intensity_diff[2] > 50 && intensity_diff[3] > 30){
                     mask1.at<uchar>(n,m) = 0;
                 }
             }
         }
+}
+
+double pixelAccuracy(Mat& mask, Mat& mask_got){
+    double TP, TN, FP, FN;
+    for(int i = 0; i < mask.rows && mask_got.rows; i++){//got
+        for(int j = 0; j < mask.cols && mask_got.cols; j++){
+           if(mask.at<Vec3b>(i,j)[0]==255 && mask.at<Vec3b>(i,j)[1]==255 && mask.at<Vec3b>(i,j)[3]==255){
+                if(mask_got.at<Vec3b>(i,j)[0]==255 && mask_got.at<Vec3b>(i,j)[1]==255 && mask_got.at<Vec3b>(i,j)[3]==255){//correctly classified as hands
+                    TP++;
+                }
+                else{//incorrectly classified as hands
+                    FP++;
+                }
+            }
+            else if(mask_got.at<Vec3b>(i,j)[0]==255 && mask_got.at<Vec3b>(i,j)[1]==255 && mask_got.at<Vec3b>(i,j)[3]==255){//incorrectly classified as not hands
+                    FN++;  
+                }
+                else{//correctly classified as not hands
+                    TN++;
+                }
+          }
+    }
+        
+    //calculate accuracy
+    return(TP + TN)/(TP + TN + FP +FN);
 }
