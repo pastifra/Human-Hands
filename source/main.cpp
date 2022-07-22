@@ -19,37 +19,45 @@ int main( int argc, char** argv )
     
     //NET CONFIGURATION
     yolo = readNetFromDarknet(cfg_path, weights_path);
-    auto output_names = yolo.getUnconnectedOutLayersNames();
+    vector<string> output_names = yolo.getUnconnectedOutLayersNames(); //size = 3
     
     //IMAGE PREPROCESSING
     Mat frame = imread("/home/local/pastfra10151/Desktop/HumanHands/Data/10.jpg");
     Mat blob;
     
     /* Creation of a blob of dimension 1x3x416x416 with values scaled in range [0,1] and swapping 
-       the channels from OpenCV BGR to RGB as the network train format*/
+     * the channels from OpenCV BGR to RGB as the network train format*/
     blobFromImage(frame, blob, 1.0/255.0, cv::Size(416, 416), cv::Scalar(), true, false, CV_32F);
     
     //FORWARD PASS
     vector<Mat> detections;
     yolo.setInput(blob);
-    yolo.forward(detections, output_names);
+    yolo.forward(detections, output_names); //dections size = 3
     
     std::vector<int> indices;
     std::vector<cv::Rect> boxes;
     std::vector<float> scores;
     
-    for (auto& output : detections)
+    for (auto& output : detections) // For each unconnected output layer
     {   
-        const auto num_boxes = output.rows;
+        // First output layer has 8112 bboxes
+        // Second output layer has 2028 bboxes
+        // Third output layer has 507
+        const int num_boxes = output.rows;
+        
         for (int i = 0; i < num_boxes; i++)
         {
-            auto x = output.at<float>(i, 0) * frame.cols;
-            auto y = output.at<float>(i, 1) * frame.rows;
-            auto width = output.at<float>(i, 2) * frame.cols;
-            auto height = output.at<float>(i, 3) * frame.rows;
+            /* Get center,width and height of the bounding box
+             * scaled up to the original image size */
+             
+            int x = output.at<float>(i, 0) * frame.cols;
+            int y = output.at<float>(i, 1) * frame.rows;
+            int width = output.at<float>(i, 2) * frame.cols;
+            int height = output.at<float>(i, 3) * frame.rows;
+            
             cv::Rect rect(x - width/2, y - height/2, width, height);
-
-            auto confidence = *output.ptr<float>(i, 5);
+            
+            auto confidence = output.at<float>(i, 5);
             if (confidence >= 0)
             {
                 boxes.push_back(rect);
@@ -58,6 +66,8 @@ int main( int argc, char** argv )
         }
     }
     
+    /* Perform non maxima suppression of overlapping boxes and save the 
+     * best one indices from the vector boxes in the vector indices */
     cv::dnn::NMSBoxes(boxes, scores, 0.0, 0.4, indices);
         
     for (size_t i = 0; i < indices.size(); ++i)
