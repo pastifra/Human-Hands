@@ -15,8 +15,8 @@ def decode_net_out(out):
         if(ox_cell != 0 and oy_cell !=0):
           ox = trunc(ox_cell*cell_size + cell_size*j)
           oy = trunc(oy_cell*cell_size + cell_size*i)
-          w = w_cell*cell_size
-          h = h_cell*cell_size
+          w = w_cell*448
+          h = h_cell*448
           lx = ox - w/2
           ly = oy - h/2
           bbox = [out[i][j][0], int(lx),int(ly),int(w),int(h)]
