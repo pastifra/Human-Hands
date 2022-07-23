@@ -15,20 +15,47 @@ void readNumbers(vector<int>& numbers, string filePath){
     }
 }
 
-void improveBySkin(Mat& img){
-    Mat hsvImg, threshImg;         
-    //TRY TO IMPROVE ACCURACY WITH DIVISION OF CHANNELS
-    blur(img, img, Size(3,3));//increase a little bit accuracy
-        
-    //divide channels
-    cvtColor(img, hsvImg, cv::COLOR_BGR2HSV);
-      
-    //color skin
-    inRange(hsvImg, Scalar(0, 58, 50), Scalar(30, 255, 255), threshImg);
-    /*imshow("color",threshImg);
-    waitKey(0);*/
-    //grabCut requires image in rgb
-    cv::cvtColor(threshImg, threshImg, cv::COLOR_RGBA2RGB);
+void improveBySkin(Rect& r, Mat& img){
+    //try to do for each bounding box
+    for(int m = r.x; m < r.x + r.width; m++){
+        for(int n = r.y; n < r.y + r.height; n++){
+            Mat hsvImg, threshImg;         
+            
+            //divide channels
+            cvtColor(img, hsvImg, cv::COLOR_BGR2HSV);
+
+            //color skin
+            inRange(hsvImg, Scalar(0, 58, 50), Scalar(30, 255, 255), threshImg);
+            imshow("color",threshImg);
+            waitKey(1);
+            
+            blur(threshImg, threshImg, Size(3,3));//increase a little bit accuracy
+            
+            dilate(threshImg, threshImg, cv::Mat());
+            erode(threshImg, threshImg, cv::Mat());
+                    
+            //grabCut requires image in rgb
+            cv::cvtColor(threshImg, threshImg, cv::COLOR_RGBA2RGB);
+            
+            /*
+            //try to found the edges for each bb        
+            Mat gray_img;
+            cvtColor(img, gray_img, COLOR_BGR2GRAY);  
+                    
+            Mat edges;
+            Canny(gray_img, edges, 10, 250); 
+            Mat kernel = cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(5, 5));
+                    
+            Mat dilated;
+            dilate(edges, dilated, kernel);
+             
+            blur(dilated, dilated, Size(3,3));
+            
+            imshow("edges",dilated);
+                    
+            waitKey(1);*/
+        }
+    }
 }
 
 void segmentation_rect(Mat& img, Rect& r, Mat& mask1){
