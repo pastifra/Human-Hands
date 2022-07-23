@@ -68,8 +68,8 @@ class DataGenerator(tf.keras.utils.Sequence):
             ox_cell = (ox - (grid_col)*self.cell_size)/self.cell_size
             oy_cell = (oy - (grid_row)*self.cell_size)/self.cell_size
             # Calculate the width and height of the bbox in terms of cell size, a bbox of width 448/S(cell size) will have grid_width = 1
-            grid_width = b_width/self.cell_size
-            grid_heigth = b_height/self.cell_size
+            grid_width = b_width/448
+            grid_heigth = b_height/448
             # Put the results into y; 1 represent the probability of the class
             y = [1,ox_cell,oy_cell,grid_width,grid_heigth]
             y_img[grid_row][grid_col] = y
