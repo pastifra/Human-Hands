@@ -11,7 +11,7 @@
 
 void readNumbers(std::vector<int>& numbers, std::string filePath);
 
-void improveBySkin(cv::Mat& img);
+void improveBySkin(cv::Rect& r, cv::Mat& img);
 void segmentation_rect(cv::Mat& img, cv::Rect& r, cv::Mat& mask1);
 void improveMask(cv::Rect& r, cv::Mat& mask1);
 void segmentation_mask(cv::Mat& img, cv::Mat& mask1);
