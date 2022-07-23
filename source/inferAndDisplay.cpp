@@ -13,7 +13,7 @@ using namespace dnn;
 std::vector<cv::Rect> inferAndDisplay(cv::dnn::Net yolo, std::vector<string> outNames, cv::Mat image)
 {
     /* Creation of a blob of dimension 1x3x416x416 with values scaled in range [0,1] and swapping 
-     * the channels from OpenCV BGR to RGB as the network train format*/
+     * the channels from OpenCV BGR to RGB as the network train format */
     Mat blob;
     blobFromImage(image, blob, 1.0/255.0, cv::Size(416, 416), cv::Scalar(), true, false, CV_32F);
     
@@ -39,7 +39,7 @@ std::vector<cv::Rect> inferAndDisplay(cv::dnn::Net yolo, std::vector<string> out
     for (Mat& output : detections) // For each unconnected output layer
     {   
         // Each box has 6 entries [ox = center,oy = center,width,height, P = confidence , C = class] 
-        // First output layer has 8112 bboxes => detections size = 8112x6
+        // First output layer has 8112 bboxes (52x52x(3 predictions per cell)) => detections size = 8112x6
         // Second output layer has 2028 bboxes => detections size = 2028x6
         // Third output layer has 507 bboxes => detections size = 507x6
         
@@ -71,26 +71,31 @@ std::vector<cv::Rect> inferAndDisplay(cv::dnn::Net yolo, std::vector<string> out
      * best one indices from the vector boxes in the vector indices */
     NMSBoxes(boxes, scores, 0.0, 0.4, indices);
     
-    vector<Rect> outBoxes;
+    
+    vector<Rect> outBoxes; // Final boxes after the non maxima suppression
         
-    for (size_t i = 0; i < indices.size(); ++i)
+    for (size_t i = 0; i < indices.size(); ++i) // For each box after NMS
     {
         int idx = indices[i];
-        const Rect& rect = boxes[idx];
+        const Rect& rect = boxes[idx]; // Box after NMS
         outBoxes.push_back(rect);
         
+        // Draw the box on the image
         cv::rectangle(image, cv::Point(rect.x, rect.y), cv::Point(rect.x + rect.width, rect.y + rect.height), (0,0,255), 3);
 
+        // Set the label with name of the class and confidence score
         ostringstream label_stream;
         label_stream << "Hand : " << std::fixed << std::setprecision(2) << scores[idx];
         string label = label_stream.str();
                 
+        // Draw a filled rectangle with dimension of text size on top of the box and put text inside it        
         int baseline;
         Size label_size = getTextSize(label.c_str(), FONT_HERSHEY_COMPLEX_SMALL, 1, 1, &baseline);
         rectangle(image, cv::Point(rect.x, rect.y - label_size.height - baseline - 10), cv::Point(rect.x + label_size.width, rect.y), (0,0,255), FILLED);
         putText(image, label.c_str(), cv::Point(rect.x, rect.y - baseline - 5), FONT_HERSHEY_COMPLEX_SMALL, 1, Scalar(0, 0, 0));
     }
     
+    // Show the output image with predictions
     namedWindow("output");
     imshow("output", image);
     waitKey(0);

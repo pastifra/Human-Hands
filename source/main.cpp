@@ -4,6 +4,7 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/dnn/dnn.hpp>
 #include <iostream>
+#include <filesystem>
 #include "classes.h"
 
 using namespace std;
@@ -20,10 +21,25 @@ int main(int argc, char** argv)
     yolo = readNetFromDarknet(cfg_path, weights_path);
     vector<string> output_names = yolo.getUnconnectedOutLayersNames(); //size = 3
     
-    //IMAGE READING
-    Mat image = imread("/home/local/pastfra10151/Desktop/HumanHands/Data/25.jpg");
     
-    vector<Rect> outBoxes = inferAndDisplay(yolo, output_names, image);
+    String dataPath;
+    cout << "Please enter the path of the directory containing the test images ";
+    cin >> dataPath;
     
+    vector<string> everyImgPath;
+    glob(dataPath + "/*.jpg", fn, false); //Get a list of all the images paths
+    
+    for (string& entry : everyImgPath) //For each image in the test directory
+    {
+        Mat image = imread(entry);
+        
+        if (image.empty())
+        {
+            printf("Error opening image");
+            return 0;
+        }
+        vector<Rect> outBoxes = inferAndDisplay(yolo, output_names, image);        
+    }
+
     return 0;
 }
