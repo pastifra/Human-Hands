@@ -1,4 +1,4 @@
-
+#include <opencv2/imgproc.hpp>
 #include "segmentation.h"
 
 using namespace cv;

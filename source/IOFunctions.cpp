@@ -36,11 +36,17 @@ void displayImg(string caption, Mat& image){
     // Show the output image with predictions
     namedWindow(caption);
     imshow(caption, image);
-    waitKey(0);
+    waitKey(1);
 }
 
-void printBbox(Rect& r, string caption){
-    cout << caption << endl;
+void printBboxes(vector<Rect>& bBoxes, string description){
+    cout << description << endl;
+    for(int i = 0; i < bBoxes.size(); i++){
+        printBbox(bBoxes.at(i));
+    }
+}
+
+void printBbox(Rect& r){
     cout << "x: " << r.x << endl;
     cout << "y: " << r.y << endl;     
     cout << "width: " << r.width << endl;  

@@ -1,11 +1,7 @@
-#include <opencv2/opencv.hpp>
-#include <opencv2/core/core.hpp>
-#include <opencv2/objdetect.hpp>
-#include <opencv2/highgui/highgui.hpp>
-#include <opencv2/dnn/dnn.hpp>
-#include <iostream>
 #include <filesystem>
 #include <string>
+#include "opencv2/highgui.hpp"
+#include <iostream>
 
 #include "detection.h"
 #include "segmentation.h"
@@ -64,11 +60,10 @@ int main(int argc, char** argv)
         draw_gt(gtBoxes, image);
         displayImg("output bounding boxes", image);
         
-        cout << "Image: " << counter + 1 << "\n" << endl;
-        for(int i = 0; i < outBoxes.size(); i++){
-            printBbox(outBoxes.at(i), "Computed bounding box:"); //print the computed bounding box
-            printBbox(gtBoxes.at(i), "Ground truth bounding box:"); //print the ground truth bounding box
-        }
+        cout << "####################### IMAGE " << counter + 1 << " #######################\n" << endl;
+        
+        printBboxes(outBoxes, "Computed bounding boxes: "); //print the computed bounding boxes
+        printBboxes(gtBoxes, "Ground truth bounding boxes: "); //print the ground truth bounding boxes
         
         double avg_IoU = single_img_results(outBoxes, gtBoxes); //get the average intersection over union of the imahe
         cout << "Avg IoU: "<< avg_IoU << "\n" << endl;
@@ -83,7 +78,7 @@ int main(int argc, char** argv)
         displayImg("segmented image", originalImg);
         
         double accuracy = pixelAccuracy(mask, mask_gt);
-        cout<<"Pixel accuracy:"<< accuracy << "\n" << endl;
+        cout<<"Pixel accuracy: "<< accuracy << "\n" << endl;
         
         sum_accuracies += accuracy; //update parameters
         counter++;
