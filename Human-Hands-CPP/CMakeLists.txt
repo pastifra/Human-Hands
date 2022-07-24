@@ -2,10 +2,10 @@ cmake_minimum_required(VERSION 2.8)
 
 project(project)
 
-find_package(OPENCV REQUIRED)
+find_package(OpenCV REQUIRED)
 
-include_directories(${OPENCV_INCLUDE_DIRS} ${PROJECT_SOURCE_DIR})
+include_directories(${OPENCV_INCLUDE_DIRS})
 
-add_executable(${PROJECT_NAME} source/segmentation_.cpp source/functions.cpp source/accuracy.cpp include/functions.h)
+add_executable(${PROJECT_NAME} source/main.cpp source/detection.cpp source/IntersectionOverUnion.cpp source/segmentation.cpp source/IOFunctions.cpp source/accuracy.cpp   include/IOfunctions.h include/detection.h include/segmentation.h)
 
-target_link_libraries(${PROJECT_NAME} ${OPENCV_LIBS})
+target_link_libraries(${PROJECT_NAME} ${OpenCV_LIBS})
