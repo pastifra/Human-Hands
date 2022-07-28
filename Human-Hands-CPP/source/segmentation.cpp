@@ -33,7 +33,7 @@ void closing(Mat& mask1, Rect& r){
     Mat element = getStructuringElement( MORPH_RECT, Size(2 * morph_size + 1, 2 * morph_size + 1), Point(morph_size, morph_size));
       
     // Closing
-    morphologyEx(mask1, mask11, MORPH_CLOSE, element, Point(-1, -1), 2);
+    morphologyEx(mask1, mask1, MORPH_CLOSE, element, Point(-1, -1), 2);
 }
 
 void segmentImg(Mat& originalImg, vector<Rect>& outBoxes, Mat& mask){
