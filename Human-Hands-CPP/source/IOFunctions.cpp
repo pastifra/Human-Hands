@@ -1,7 +1,7 @@
 #include <iostream>
 #include <opencv2/highgui/highgui.hpp>
 #include <fstream>
-#include "IOfunctions.h"
+#include "../include/IOfunctions.h"
 
 using namespace std;
 using namespace cv;
