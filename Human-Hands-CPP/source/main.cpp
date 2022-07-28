@@ -3,9 +3,9 @@
 #include "opencv2/highgui.hpp"
 #include <iostream>
 
-#include "detection.h"
-#include "segmentation.h"
-#include "IOfunctions.h"
+#include "../include/detection.h"
+#include "../include/segmentation.h"
+#include "../include/IOfunctions.h"
 
 using namespace std;
 using namespace cv;
